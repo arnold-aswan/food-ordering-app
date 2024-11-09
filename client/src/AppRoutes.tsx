@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import Layout from "./layouts/Layout";
 import HomePage from "./pages/HomePage";
 import AuthCallback from "./pages/AuthCallback";
+import UserProfile from "./pages/UserProfile";
 
 const AppRoutes = () => {
 	return (
@@ -9,7 +10,7 @@ const AppRoutes = () => {
 			<Route
 				path="/"
 				element={
-					<Layout>
+					<Layout showHero>
 						<HomePage />
 					</Layout>
 				}
@@ -20,7 +21,11 @@ const AppRoutes = () => {
 			/>
 			<Route
 				path="/user-profile"
-				element={<span>user profile</span>}
+				element={
+					<Layout>
+						<UserProfile />
+					</Layout>
+				}
 			/>
 			<Route
 				path="*"

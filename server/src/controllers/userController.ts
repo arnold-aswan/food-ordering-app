@@ -7,7 +7,16 @@ interface CreateUserRequest extends Request {
 		auth0Id: string;
 		email: string;
 		name?: string;
-		[key: string]: any; // for remaining flexible properties
+	};
+}
+
+interface UpdateUserRequest extends Request {
+	userId: string;
+	body: {
+		name?: string;
+		addressLine1?: string;
+		city?: string;
+		country?: string;
 	};
 }
 
@@ -34,6 +43,30 @@ const createUser = async (
 	}
 };
 
+const updateUser = async (req: UpdateUserRequest, res: Response) => {
+	try {
+		const { name, addressLine1, country, city } = req.body;
+		const user = await User.findById(req.userId);
+
+		if (!user) {
+			res.status(404).json({ message: "User not found" });
+			return;
+		}
+
+		user.name = name;
+		user.addressLine1 = addressLine1;
+		user.country = country;
+		user.city = city;
+
+		await user.save();
+		res.status(200).json(user.toObject());
+	} catch (error) {
+		console.log(error);
+		res.status(500).json({ message: "Error updating user" });
+	}
+};
+
 export default {
 	createUser,
+	updateUser,
 };
