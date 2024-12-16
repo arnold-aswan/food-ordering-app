@@ -1,6 +1,5 @@
 import {
 	Sheet,
-	SheetClose,
 	SheetContent,
 	SheetDescription,
 	SheetTitle,
