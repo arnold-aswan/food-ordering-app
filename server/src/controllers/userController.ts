@@ -20,6 +20,10 @@ interface UpdateUserRequest extends Request {
 	};
 }
 
+interface GetUserRequest extends Request {
+	userId: string;
+}
+
 const createUser = async (
 	req: CreateUserRequest,
 	res: Response
@@ -66,7 +70,22 @@ const updateUser = async (req: UpdateUserRequest, res: Response) => {
 	}
 };
 
+const getCurrentUser = async (req: GetUserRequest, res: Response) => {
+	try {
+		const currentUser = await User.findOne({ _id: req.userId });
+		if (!currentUser) {
+			res.status(404).json({ message: "User not found" });
+			return;
+		}
+		res.json(currentUser);
+	} catch (error) {
+		console.log(error);
+		res.status(500).json({ message: "Something went wrong" });
+	}
+};
+
 export default {
 	createUser,
 	updateUser,
+	getCurrentUser,
 };
