@@ -62,12 +62,11 @@ const ManageRestaurantForm = ({ onSave, isLoading, restaurant }: props) => {
 			formData.append(`menuItems[${index}][price]`, menuItem.price.toString());
 		});
 
-		if (!formDataJson.imageFile) {
-			alert("Image file is required");
-			return;
+		if (formDataJson.imageFile) {
+			// alert("Image file is required");
+			// return;
+			formData.append("imageFile", formDataJson.imageFile);
 		}
-
-		formData.append("imageFile", formDataJson.imageFile);
 
 		onSave(formData);
 	};
