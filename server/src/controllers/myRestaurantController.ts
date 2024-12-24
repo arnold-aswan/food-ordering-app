@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import Restaurant from "../models/restaurant";
 import { v2 as cloudinary } from "cloudinary";
 import mongoose from "mongoose";
