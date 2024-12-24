@@ -1,7 +1,7 @@
 import { useAuth0 } from "@auth0/auth0-react";
 import { headers } from "@/constants/data";
 import axios from "axios";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Restaurant } from "@/types";
 
@@ -21,6 +21,7 @@ export const useCreateMyRestaurant = () => {
 			{
 				headers: {
 					...headers,
+					"Content-Type": "multipart/form-data",
 					Authorization: `Bearer ${accessToken}`,
 				},
 			}
@@ -48,4 +49,32 @@ export const useCreateMyRestaurant = () => {
 	}
 
 	return { createRestaurant, isPending };
+};
+
+export const useGetMyRestaurant = () => {
+	const { getAccessTokenSilently } = useAuth0();
+
+	const getMyRestaurantRequest = async (): Promise<Restaurant> => {
+		const accessToken = await getAccessTokenSilently();
+
+		const response = await axios.get(`${API_BASE_URL}/api/my/restaurant`, {
+			headers: {
+				...headers,
+				Authorization: `Bearer ${accessToken}`,
+			},
+		});
+
+		if (response.status !== 200) {
+			throw new Error("Failed to get restaurant");
+		}
+
+		return response.data;
+	};
+
+	const { data: restaurant, isPending } = useQuery<Restaurant>({
+		queryKey: ["getMyRestaurants"],
+		queryFn: getMyRestaurantRequest,
+	});
+
+	return { restaurant, isPending };
 };
