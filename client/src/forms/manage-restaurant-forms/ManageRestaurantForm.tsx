@@ -8,17 +8,38 @@ import ImageSection from "./ImageSection";
 import LoadingButton from "@/components/LoadingButton";
 import { Button } from "@/components/ui/button";
 import { formSchema } from "../zod-shemas/shemas";
+import { Restaurant } from "@/types";
+import { useEffect } from "react";
 
 type RestaurantFormData = z.infer<typeof formSchema>;
 
 type props = {
+	restaurant?: Restaurant;
 	onSave: (restaurantFormData: FormData) => void;
 	isLoading: boolean;
 };
 
-const ManageRestaurantForm = ({ onSave, isLoading }: props) => {
+const ManageRestaurantForm = ({ onSave, isLoading, restaurant }: props) => {
 	// Access the form context instead
-	const { handleSubmit } = useFormContext<RestaurantFormData>();
+	const { handleSubmit, reset } = useFormContext<RestaurantFormData>();
+
+	useEffect(() => {
+		if (!restaurant) {
+			return;
+		}
+
+		const menuItemsFormatted = restaurant?.menuItems?.map((item) => ({
+			...item,
+			price: item.price,
+		}));
+
+		const updatedRestaurant = {
+			...restaurant,
+			menuItems: menuItemsFormatted,
+		};
+
+		reset(updatedRestaurant);
+	}, [reset, restaurant]);
 
 	const onSubmit = (formDataJson: RestaurantFormData) => {
 		const formData = new FormData();

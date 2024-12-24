@@ -1,4 +1,7 @@
-import { useCreateMyRestaurant } from "@/api/MyRestaurantApi";
+import {
+	useCreateMyRestaurant,
+	useGetMyRestaurant,
+} from "@/api/MyRestaurantApi";
 import ManageRestaurantForm from "@/forms/manage-restaurant-forms/ManageRestaurantForm";
 import { FormProvider, useForm } from "react-hook-form";
 
@@ -9,6 +12,9 @@ import { formSchema } from "@/forms/zod-shemas/shemas";
 type RestaurantFormData = z.infer<typeof formSchema>;
 
 const ManageRestaurantPage = () => {
+	const { createRestaurant, isPending } = useCreateMyRestaurant();
+	const { restaurant } = useGetMyRestaurant();
+
 	const methods = useForm<RestaurantFormData>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
@@ -22,11 +28,11 @@ const ManageRestaurantPage = () => {
 			imageFile: undefined, // ✅ For file inputs, this can be null or undefined
 		},
 	});
-	const { createRestaurant, isPending } = useCreateMyRestaurant();
 
 	return (
 		<FormProvider {...methods}>
 			<ManageRestaurantForm
+				restaurant={restaurant}
 				onSave={createRestaurant}
 				isLoading={isPending}
 			/>
