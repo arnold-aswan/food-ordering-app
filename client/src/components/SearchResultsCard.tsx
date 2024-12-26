@@ -14,7 +14,7 @@ const SearchResultsCard = ({ restaurant }: Props) => {
 			className="grid lg:grid-cols-[2fr_3fr] gap-5 group "
 		>
 			{/* Card Image */}
-			<AspectRatio ratio={16 / 8}>
+			<AspectRatio ratio={16 / 6}>
 				<img
 					src={restaurant?.imageUrl}
 					className="w-full h-full object-cover"

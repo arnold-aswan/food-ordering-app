@@ -2,10 +2,23 @@ import { useSearchRestaurants } from "@/api/RestaurantApi";
 import SearchResultsCard from "@/components/SearchResultsCard";
 import SearchResultsInfo from "@/components/SearchResultsInfo";
 import { useParams } from "react-router-dom";
+import {useState} from "react";
+import SearchBar from "@/components/SearchBar.tsx";
+import {SearchForm} from "@/forms/zod-shemas/shemas.tsx";
+import PaginationSelector from "@/components/PaginationSelector.tsx";
+
+export type SearchState = {
+	searchQuery: string;
+	page: number
+}
 
 const SearchPage = () => {
 	const { city } = useParams();
-	const { results, isPending } = useSearchRestaurants(city);
+	const [searchState, setSearchState] = useState<SearchState>({
+		searchQuery:"",
+		page: 1
+	})
+	const { results, isPending } = useSearchRestaurants(searchState, city);
 
 	if (!results?.data || !city) {
 		return <span>No results found</span>;
@@ -13,6 +26,29 @@ const SearchPage = () => {
 
 	if (isPending) {
 		return <span>Loading ...</span>;
+	}
+
+	const setSearchQuery = (searchFormData: SearchForm)=> {
+		setSearchState((prevState) => ({
+			...prevState,
+			searchQuery: searchFormData.searchQuery,
+			page: 1
+		}))
+	}
+
+	const resetSearch = () => {
+		setSearchState((prevState) => ({
+			...prevState,
+			searchQuery: "",
+			page: 1
+		}))
+	}
+
+	const setPage = (page: number) => {
+		setSearchState((prevState)=> ({
+			...prevState,
+			page,
+		}))
 	}
 
 	return (
@@ -24,6 +60,12 @@ const SearchPage = () => {
 				id="main-content"
 				className="flex flex-col gap-5"
 			>
+				<SearchBar
+					onSubmit={setSearchQuery}
+					placeHolder={"search by cuisine or restaurant name"}
+					onReset={resetSearch}
+					searchQuery={searchState.searchQuery}
+				/>
 				<SearchResultsInfo
 					total={results.pagination.total}
 					city={city}
@@ -36,6 +78,11 @@ const SearchPage = () => {
 						restaurant={restaurant}
 					/>
 				))}
+
+				<PaginationSelector
+					page={results?.pagination?.page}
+					pages={results?.pagination?.pages}
+					onPageChange={setPage} />
 			</div>
 		</section>
 	);
