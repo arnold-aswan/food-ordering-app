@@ -1,4 +1,4 @@
-import { RestaurantSearchResponse } from "@/types";
+import { Restaurant, RestaurantSearchResponse } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { SearchState } from "@/pages/SearchPage.tsx";
@@ -33,4 +33,25 @@ export const useSearchRestaurants = (
   });
 
   return { results, isPending };
+};
+
+export const useGetRestaurant = (restaurantId?: string) => {
+  const getRestaurantByIdRequest = async (): Promise<Restaurant> => {
+    const response = await axios.get(
+      `${API_BASE_URL}/api/restaurant/${restaurantId}`,
+    );
+    if (response.status !== 200) {
+      throw new Error("Failed to get restaurant");
+    }
+
+    return response.data;
+  };
+
+  const { data: restaurant, isPending } = useQuery({
+    queryKey: ["getRestaurant"],
+    queryFn: getRestaurantByIdRequest,
+    enabled: !!restaurantId,
+  });
+
+  return { restaurant, isPending };
 };
