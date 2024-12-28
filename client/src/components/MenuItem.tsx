@@ -8,10 +8,11 @@ import {
 
 type Props = {
   menuItem: MenuItem;
+  addToCart: () => void;
 };
-const MenuItems = ({ menuItem }: Props) => {
+const MenuItems = ({ menuItem, addToCart }: Props) => {
   return (
-    <Card className={"cursor-pointer"}>
+    <Card className={"cursor-pointer"} onClick={addToCart}>
       <CardHeader className={"space-y-5"}>
         <CardTitle>{menuItem?.name}</CardTitle>
         <CardContent className={"font-bold p-0"}>
