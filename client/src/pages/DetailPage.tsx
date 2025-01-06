@@ -1,18 +1,27 @@
 import { useParams } from "react-router-dom";
+import { useState } from "react";
+import { Card, CardFooter } from "@/components/ui/card.tsx";
 import { useGetRestaurant } from "@/api/RestaurantApi.tsx";
 import { AspectRatio } from "@/components/ui/aspect-ratio.tsx";
 import RestaurantInfo from "@/components/RestaurantInfo.tsx";
 import MenuItems from "@/components/MenuItem.tsx";
-import { useState } from "react";
-import { Card } from "@/components/ui/card.tsx";
-import { CartItem, MenuItem } from "@/types.ts";
 import OrderSummary from "@/components/OrderSummary.tsx";
+import CheckedOutButton from "@/components/CheckedOutButton.tsx";
+import { CartItem, MenuItem } from "@/types.ts";
+import { UserFormData } from "@/forms/user-profile-forms/UserProfileForm.tsx";
+import { useCreateCheckoutSession } from "@/api/OrderApi.tsx";
 
 const DetailPage = () => {
   const { restaurantId } = useParams();
   const { restaurant, isPending } = useGetRestaurant(restaurantId);
+  const { isPending: isCheckoutLoading, createCheckoutSession } =
+    useCreateCheckoutSession();
 
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
+    const storedCartItems = sessionStorage.getItem(`cartItems-${restaurantId}`);
+    return storedCartItems ? JSON.parse(storedCartItems) : [];
+  });
+  // const navigate = useNavigate();
 
   const addToCart = (menuItem: MenuItem) => {
     setCartItems((prevState) => {
@@ -42,18 +51,63 @@ const DetailPage = () => {
         ];
       }
 
+      sessionStorage.setItem(
+        `cartItems-${restaurantId}`,
+        JSON.stringify(updatedCartItems),
+      );
+
       return updatedCartItems;
     });
   };
 
   const removeFromCart = (cartItem: CartItem) => {
     setCartItems((prevState) => {
-      const updateCartItems = prevState?.filter(
+      const updatedCartItems = prevState?.filter(
         (item) => item?._id !== cartItem?._id,
       );
 
-      return updateCartItems;
+      sessionStorage.setItem(
+        `cartItems-${restaurantId}`,
+        JSON.stringify(updatedCartItems),
+      );
+
+      return updatedCartItems;
     });
+  };
+
+  const onCheckout = async (userFormData: UserFormData) => {
+    try {
+      // Add explicit check for restaurant ID
+      if (!restaurant || !restaurant._id) {
+        throw new Error("Restaurant information is missing");
+      }
+
+      const checkoutData = {
+        cartItems: cartItems.map((cartItem) => ({
+          menuItemId: cartItem._id,
+          name: cartItem.name,
+          quantity: cartItem.quantity.toString(),
+        })),
+        deliveryDetails: {
+          email: userFormData.email as string,
+          name: userFormData.name,
+          addressLine1: userFormData.addressLine1,
+          city: userFormData.city,
+          country: userFormData.country,
+        },
+        restaurantId: restaurant._id,
+      };
+
+      const response = await createCheckoutSession(checkoutData);
+
+      if (response.data?.authorization_url) {
+        window.location.href = response.data.authorization_url;
+      } else {
+        throw new Error("No authorization URL returned");
+      }
+    } catch (error) {
+      console.error("Checkout error:", error);
+    }
   };
 
   if (isPending || !restaurant) {
@@ -92,6 +146,13 @@ const DetailPage = () => {
             cartItems={cartItems}
             removeFromCart={removeFromCart}
           />
+          <CardFooter>
+            <CheckedOutButton
+              disabled={cartItems?.length === 0}
+              onCheckout={onCheckout}
+              isLoading={isCheckoutLoading}
+            />
+          </CardFooter>
         </Card>
       </div>
     </section>
