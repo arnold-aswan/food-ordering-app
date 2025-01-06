@@ -42,6 +42,7 @@ export const useCreateCheckoutSession = () => {
     );
 
     if (response.status !== 200) {
+      console.log(response);
       throw new Error("Failed to create checkout session");
     }
     console.log(response.data);
@@ -57,7 +58,7 @@ export const useCreateCheckoutSession = () => {
   } = useMutation({ mutationFn: createCheckoutSessionRequest });
 
   if (isError) {
-    toast.error(`error on checkout ${error.toString()}`);
+    toast.error(`error on checkout: ${error} : ${error.toString()}`);
     reset();
     console.log(error);
   }
