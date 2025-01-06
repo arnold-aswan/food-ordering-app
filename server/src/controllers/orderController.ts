@@ -89,30 +89,45 @@ const paystackWebHookHandler = async (
   res: Response,
 ): Promise<void> => {
   try {
+    console.log("Webhook handler triggered"); // Initial log
+    console.log("Webhook received:", req.body);
+    console.log("Headers:", req.headers);
+    console.log("Raw body:", req.body);
     //validate event
     const hash = crypto
       .createHmac("sha512", process.env.PAYSTACK_SECRET_KEY as string)
       .update(JSON.stringify(req.body))
       .digest("hex");
+
+    console.log("Headers:", req.headers["x-paystack-signature"]);
     // handle unsuccesful payment
     if (hash !== req.headers["x-paystack-signature"]) {
+      console.log("invalid signature deteecetd");
       res.status(400).json({ error: "Invalid signature" });
       return;
     }
     // Retrieve the request's body
     const event = req.body;
+    console.log("Event type:", event.event); // Log the event type
     // Handle successful payment
-    if (event.event === "carge.success") {
+    if (event.event === "charge.success") {
       //   get order details from metadata
       const email = event.data.customer.email;
       const paymentReference = event.data.reference;
       const paymentStatus = event.data.status;
 
       //   find most recent order for this email that's in placed status
+      console.log("Looking for order with:", {
+        email,
+        paymentReference,
+        paymentStatus,
+      });
       const order = await Order.findOne({
-        "deliveryDetails.email": email,
+        paymentReference: paymentReference,
         status: "placed",
       }).sort({ createdAt: -1 });
+
+      console.log("Found order:", order); // Log the found order
 
       if (!order) {
         console.error(
@@ -124,9 +139,17 @@ const paystackWebHookHandler = async (
 
       //   update order status
       if (paymentStatus === "success") {
+        console.log(order);
         order.status = "paid";
         order.paymentReference = paymentReference;
-        await order.save();
+        try {
+          const savedOrder = await order.save();
+          console.log("Order updated:", savedOrder);
+        } catch (dbError) {
+          console.error("Error saving order to database:", dbError);
+        }
+        // const savedOrder = await order.save();
+        // console.log("Order updated:", savedOrder); // Log the saved order
       }
     }
     res.status(200).send({ received: true });
