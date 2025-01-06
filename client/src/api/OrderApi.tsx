@@ -52,11 +52,12 @@ export const useCreateCheckoutSession = () => {
     mutateAsync: createCheckoutSession,
     isPending,
     isError,
+    error,
     reset,
   } = useMutation({ mutationFn: createCheckoutSessionRequest });
 
   if (isError) {
-    toast.error(isError.toString());
+    toast.error(error.toString());
     reset();
   }
 
