@@ -99,7 +99,7 @@ const paystackWebHookHandler = async (
 
     // handle unsuccesful payment
     if (hash !== req.headers["x-paystack-signature"]) {
-      console.log("invalid signature deteecetd");
+      console.log("invalid signature detecetd");
       res.status(400).json({ error: "Invalid signature" });
       return;
     }

@@ -20,7 +20,6 @@ cloudinary.config({
 });
 
 const app = express();
-app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
     origin: [
@@ -37,6 +36,7 @@ app.use(
   express.raw({ type: "application/json" }),
 ); // Raw parser for Paystack);
 
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 app.get("/health", async (req: Request, res: Response) => {
