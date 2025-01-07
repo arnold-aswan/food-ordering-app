@@ -21,7 +21,13 @@ cloudinary.config({
 
 const app = express();
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(
+  cors({
+    origin: "https://food-ordering-app-client-11sx.onrender.com",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  }),
+);
 
 app.use("/api/order/checkout/webhook", express.raw({ type: "*/*" })); // Raw parser for Paystack);
 
