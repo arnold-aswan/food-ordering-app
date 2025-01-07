@@ -94,17 +94,17 @@ const paystackWebHookHandler = async (
     //validate event
     const hash = crypto
       .createHmac("sha512", process.env.PAYSTACK_SECRET_KEY as string)
-      .update(JSON.stringify(req.body))
+      .update(req.body)
       .digest("hex");
 
-    // handle unsuccesful payment
+    // handle unsuccessful payment
     if (hash !== req.headers["x-paystack-signature"]) {
-      console.log("invalid signature detecetd");
+      console.log("invalid signature detected");
       res.status(400).json({ error: "Invalid signature" });
       return;
     }
     // Retrieve the request's body
-    const event = JSON.parse(req.body);
+    const event = JSON.parse(req.body.toString());
     console.log("Event type:", event.event); // Log the event type
 
     // Handle successful payment
