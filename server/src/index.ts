@@ -23,13 +23,19 @@ const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
-    origin: "https://food-ordering-app-client-11sx.onrender.com",
+    origin: [
+      "https://food-ordering-app-client-11sx.onrender.com",
+      "http://localhost:5173",
+    ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   }),
 );
 
-app.use("/api/order/checkout/webhook", express.raw({ type: "*/*" })); // Raw parser for Paystack);
+app.use(
+  "/api/order/checkout/webhook",
+  express.raw({ type: "application/json" }),
+); // Raw parser for Paystack);
 
 app.use(express.json());
 

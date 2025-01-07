@@ -90,16 +90,13 @@ const paystackWebHookHandler = async (
 ): Promise<void> => {
   try {
     console.log("Webhook handler triggered"); // Initial log
-    console.log("Webhook received:", req.body);
-    console.log("Headers:", req.headers);
-    console.log("Raw body:", req.body);
+
     //validate event
     const hash = crypto
       .createHmac("sha512", process.env.PAYSTACK_SECRET_KEY as string)
       .update(JSON.stringify(req.body))
       .digest("hex");
 
-    console.log("Headers:", req.headers["x-paystack-signature"]);
     // handle unsuccesful payment
     if (hash !== req.headers["x-paystack-signature"]) {
       console.log("invalid signature deteecetd");
@@ -107,10 +104,11 @@ const paystackWebHookHandler = async (
       return;
     }
     // Retrieve the request's body
-    const event = req.body;
+    const event = JSON.parse(req.body);
     console.log("Event type:", event.event); // Log the event type
+
     // Handle successful payment
-    if (event.event === "charge.success") {
+    if (event.event === "charge.success" && event.data.status === "success") {
       //   get order details from metadata
       const email = event.data.customer.email;
       const paymentReference = event.data.reference;
@@ -122,10 +120,17 @@ const paystackWebHookHandler = async (
         paymentReference,
         paymentStatus,
       });
-      const order = await Order.findOne({
-        paymentReference: paymentReference,
-        status: "placed",
-      }).sort({ createdAt: -1 });
+
+      let order;
+      try {
+        order = await Order.findOne({
+          paymentReference,
+        });
+      } catch (dbError) {
+        console.error("Error finding order in database:", dbError);
+        res.status(500).json({ error: "Internal server error" });
+        return;
+      }
 
       console.log("Found order:", order); // Log the found order
 
@@ -137,20 +142,25 @@ const paystackWebHookHandler = async (
         return;
       }
 
-      //   update order status
-      if (paymentStatus === "success") {
-        console.log(order);
-        order.status = "paid";
-        order.paymentReference = paymentReference;
-        try {
-          const savedOrder = await order.save();
-          console.log("Order updated:", savedOrder);
-        } catch (dbError) {
-          console.error("Error saving order to database:", dbError);
-        }
-        // const savedOrder = await order.save();
-        // console.log("Order updated:", savedOrder); // Log the saved order
+      if (order.status === "paid") {
+        console.log(`Order ${order._id} is already paid.`);
+        res.status(200).json({ received: true });
+        return;
       }
+
+      //   update order status
+      // if (paymentStatus === "success") {
+      console.log(order);
+      order.status = "paid";
+      order.paymentReference = paymentReference;
+
+      try {
+        const savedOrder = await order.save();
+        console.log("Order updated:", savedOrder);
+      } catch (dbError) {
+        console.error("Error saving order to database:", dbError);
+      }
+      // }
     }
     res.status(200).send({ received: true });
   } catch (error) {
