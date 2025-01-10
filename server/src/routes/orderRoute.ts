@@ -14,4 +14,6 @@ router.post(
 // PAYSTACK WEBHOOK
 router.post("/checkout/webhook", orderController.paystackWebHookHandler);
 
+router.get("/", jwtCheck, jwtParse, orderController.getMyOrders);
+
 export default router;
