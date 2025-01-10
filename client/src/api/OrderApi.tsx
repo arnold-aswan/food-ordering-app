@@ -1,8 +1,9 @@
 import { useAuth0 } from "@auth0/auth0-react";
 import axios from "axios";
 import { headers } from "@/constants/data.ts";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Order } from "@/types.ts";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -67,4 +68,33 @@ export const useCreateCheckoutSession = () => {
     createCheckoutSession,
     isPending,
   };
+};
+
+export const useGetMyOrdersRequest = () => {
+  const { getAccessTokenSilently } = useAuth0();
+
+  const getMyOrdersRequest = async (): Promise<Order[]> => {
+    const accessToken = await getAccessTokenSilently();
+
+    const response = await axios.get(`${API_BASE_URL}/api/order`, {
+      headers: {
+        ...headers,
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error("Failed to get orders");
+    }
+
+    return response.data;
+  };
+
+  const { data: orders, isPending } = useQuery({
+    queryKey: ["getMyOrders"],
+    queryFn: getMyOrdersRequest,
+    refetchOnWindowFocus: true,
+  });
+
+  return { orders, isPending };
 };
