@@ -7,6 +7,7 @@ import ProtectedRoute from "./auth/ProtectedRoute";
 import ManageRestaurantPage from "./pages/ManageRestaurantPage";
 import SearchPage from "./pages/SearchPage";
 import DetailPage from "@/pages/DetailPage.tsx";
+import OrderStatusPage from "@/pages/OrderStatusPage.tsx";
 
 const AppRoutes = () => {
   return (
@@ -54,6 +55,17 @@ const AppRoutes = () => {
           element={
             <Layout>
               <UserProfile />
+            </Layout>
+          }
+        />
+      </Route>
+
+      <Route element={<ProtectedRoute />}>
+        <Route
+          path="/order-status"
+          element={
+            <Layout>
+              <OrderStatusPage />
             </Layout>
           }
         />
