@@ -67,5 +67,6 @@ order deliveries and payment status of the orders with an easy-to-use interface.
 
 [Arnold Aswani](https://github.com/arnold-aswan)
 
-Licensed under the [MIT License](LICENSE) - see the [LICENSE](LICENSE) file for
+Licensed under the [MIT License](LICENSE.md) - see the [LICENSE](LICENSE.md)
+file for
 more details.
